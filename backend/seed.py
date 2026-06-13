@@ -5,16 +5,23 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from datetime import date
 from app.core.database import SessionLocal, Base, engine
+# We must import all models here so SQLAlchemy knows what tables to build
 from app.models.user import User
 from app.models.department import Department
 from app.models.employee import Employee
+from app.models.attendance import Attendance
+from app.models.leave import LeaveRequest
 from app.core.security import get_password_hash
 
 def seed_database():
     print("Initialising local database connections...")
+    
+    #FORCE CREATE ALL TABLES DIRECTLY
+    Base.metadata.create_all(bind=engine)
+    print("Database tables structurally verified and built.")
+
     db = SessionLocal()
     
-    # Check if an admin already exists to prevent duplicate entries
     admin_exists = db.query(User).filter(User.email == "admin@smarthr.com").first()
     if admin_exists:
         print("Database has already been configured with an administrator account profile.")
@@ -23,7 +30,6 @@ def seed_database():
 
     print("Generating baseline administrative profile metadata...")
     
-    # 1. Create the base authenticated User account
     admin_user = User(
         email="admin@smarthr.com",
         hashed_password=get_password_hash("AdminSecure2026!"),
@@ -31,9 +37,8 @@ def seed_database():
         is_active=True
     )
     db.add(admin_user)
-    db.flush() # Flushes to database to populate admin_user.id
+    db.flush()
 
-    # 2. Create a default corporate Department
     hr_department = Department(
         name="Human Resources",
         manager_id=admin_user.id
@@ -41,7 +46,6 @@ def seed_database():
     db.add(hr_department)
     db.flush()
 
-    # 3. Provision the matching detailed Employee Profile link
     admin_employee = Employee(
         user_id=admin_user.id,
         first_name="Vimal",
