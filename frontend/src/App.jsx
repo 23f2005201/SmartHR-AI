@@ -1,12 +1,11 @@
 import React from 'react';
 import AppRoutes from './routes/AppRoutes';
+import { AuthProvider } from './context/AuthContext';
 
-function App() {
+export default function App() {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <AuthProvider>
       <AppRoutes />
-    </div>
+    </AuthProvider>
   );
 }
-
-export default App;
