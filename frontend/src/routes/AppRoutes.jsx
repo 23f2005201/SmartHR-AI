@@ -1,48 +1,43 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
+// Import Workspace Components
 import Login from '../pages/Login';
 import Dashboard from '../pages/Dashboard';
 import Onboarding from '../pages/Onboarding';
 import Attendance from '../pages/Attendance';
+import Payroll from '../pages/Payroll';
+import Reports from '../pages/Reports';
 
-// Component to protect authenticated pathways
+// Import Reusable Layout Base Wrapper
+import AppLayout from '../components/layout/AppLayout';
+
+// Component to protect authenticated pathways and mount the unified layout
 const ProtectedRoute = ({ children }) => {
-  // Simple check against local storage session flags for now
   const isAuthenticated = localStorage.getItem('token') !== null;
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <AppLayout>{children}</AppLayout>;
 };
 
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Force empty root path to clear directly to the login panel */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-
-        {/* Public Pathways */}
+        {/* Public Authentication Path */}
         <Route path="/login" element={<Login />} />
 
-        {/* Private / Guarded Management Pathways */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/onboarding" element={
-          <ProtectedRoute>
-            <Onboarding />
-          </ProtectedRoute>
-        } />
+        {/* Private / Guarded Management Pathways with Reusable Sidebar */}
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+        <Route path="/payroll" element={<ProtectedRoute><Payroll /></ProtectedRoute>} />
+        <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
+        <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
 
-        <Route path="/attendance" element={
-          <ProtectedRoute>
-            <Attendance />
-          </ProtectedRoute>
-        } />
-
-        {/* Default Route Fallback */}
+        {/* Global Fallback Redirect */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
