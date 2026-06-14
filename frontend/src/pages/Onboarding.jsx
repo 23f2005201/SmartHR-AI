@@ -23,7 +23,6 @@ export default function Onboarding() {
     setError('');
     setSuccess('');
     try {
-      // Cast appropriate data structures before transmission
       const payload = {
         ...formData,
         user_id: parseInt(formData.user_id),
@@ -33,71 +32,71 @@ export default function Onboarding() {
 
       await api.post('/employees/', payload);
       setSuccess('Employee profile successfully provisioned on the platform matrix.');
-      setStep(3); // Navigate to confirmation screen
+      setStep(3);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to submit onboarding data profile.');
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
-      <div className="max-w-2xl mx-auto bg-white rounded-xl border border-slate-200 shadow-sm p-8">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">Staff Onboarding & Profile Wizard</h1>
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-6 sm:p-8 font-sans">
+      <div className="max-w-2xl mx-auto bg-slate-900/50 backdrop-blur-xl rounded-2xl border border-slate-800 p-6 sm:p-10 shadow-2xl">
+        <h1 className="text-2xl font-extrabold tracking-tight text-white mb-6">Staff Onboarding Wizard</h1>
         
-        {error && <div className="mb-4 rounded-md bg-rose-50 p-4 text-sm text-rose-600 border border-rose-100">{error}</div>}
+        {error && <div className="mb-4 rounded-xl bg-rose-500/10 border border-rose-500/20 p-4 text-xs font-semibold text-rose-400">{error}</div>}
 
         {step === 1 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-slate-700 border-b pb-2">Step 1: Identity Information</h2>
+          <div className="space-y-5">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-slate-800 pb-2">Step 1: Core Identity Profiling</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-600">Associated User ID</label>
-                <input name="user_id" type="number" className="mt-1 w-full rounded-md border p-2 text-sm" value={formData.user_id} onChange={handleInputChange} />
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Associated User ID</label>
+                <input name="user_id" type="number" className="mt-1.5 w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-slate-700 font-medium" value={formData.user_id} onChange={handleInputChange} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-600">Joining Date</label>
-                <input name="joining_date" type="date" className="mt-1 w-full rounded-md border p-2 text-sm" value={formData.joining_date} onChange={handleInputChange} />
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Joining Date</label>
+                <input name="joining_date" type="date" className="mt-1.5 w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-slate-700 font-medium" value={formData.joining_date} onChange={handleInputChange} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-600">First Name</label>
-                <input name="first_name" type="text" className="mt-1 w-full rounded-md border p-2 text-sm" value={formData.first_name} onChange={handleInputChange} />
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">First Name</label>
+                <input name="first_name" type="text" className="mt-1.5 w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-slate-700 font-medium" placeholder="Jane" value={formData.first_name} onChange={handleInputChange} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-600">Last Name</label>
-                <input name="last_name" type="text" className="mt-1 w-full rounded-md border p-2 text-sm" value={formData.last_name} onChange={handleInputChange} />
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Last Name</label>
+                <input name="last_name" type="text" className="mt-1.5 w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-slate-700 font-medium" placeholder="Doe" value={formData.last_name} onChange={handleInputChange} />
               </div>
             </div>
-            <button onClick={() => setStep(2)} className="mt-4 px-4 py-2 bg-brand-600 text-white rounded-md text-sm font-semibold hover:bg-brand-700">Continue Layout</button>
+            <button onClick={() => setStep(2)} className="w-full mt-4 py-3 bg-white hover:bg-slate-100 text-slate-900 font-bold rounded-xl text-sm transition-all">Continue Set</button>
           </div>
         )}
 
         {step === 2 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-slate-700 border-b pb-2">Step 2: Operational Allocation & Compensation</h2>
+          <div className="space-y-5">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 border-b border-slate-800 pb-2">Step 2: Operations & Compensation</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-600">Department Identifier</label>
-                <input name="department_id" type="number" className="mt-1 w-full rounded-md border p-2 text-sm" value={formData.department_id} onChange={handleInputChange} />
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Department ID</label>
+                <input name="department_id" type="number" className="mt-1.5 w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-slate-700 font-medium" value={formData.department_id} onChange={handleInputChange} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-600">Annual Gross Salary (£)</label>
-                <input name="salary" type="number" className="mt-1 w-full rounded-md border p-2 text-sm" value={formData.salary} onChange={handleInputChange} />
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider">Base Monthly Salary (₹)</label>
+                <input name="salary" type="number" className="mt-1.5 w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-slate-700 font-medium" placeholder="60000" value={formData.salary} onChange={handleInputChange} />
               </div>
             </div>
-            <div className="flex space-x-3 mt-4">
-              <button onClick={() => setStep(1)} className="px-4 py-2 border rounded-md text-sm text-slate-600">Back</button>
-              <button onClick={handleFormSubmit} className="px-4 py-2 bg-emerald-600 text-white rounded-md text-sm font-semibold hover:bg-emerald-700">Commit Provisioning</button>
+            <div className="flex space-x-4 mt-4">
+              <button onClick={() => setStep(1)} className="flex-1 py-3 border border-slate-800 text-slate-400 font-bold rounded-xl text-sm hover:bg-slate-900/50 transition-colors">Back</button>
+              <button onClick={handleFormSubmit} className="flex-1 py-3 bg-white hover:bg-slate-100 text-slate-900 font-bold rounded-xl text-sm transition-all">Commit Profile</button>
             </div>
           </div>
         )}
 
         {step === 3 && (
-          <div className="text-center py-6">
-            <div className="text-emerald-500 text-5xl mb-4">✓</div>
-            <p className="text-md font-medium text-slate-800">{success}</p>
-            <button onClick={() => { setStep(1); setFormData({ user_id: '', first_name: '', last_name: '', department_id: '', joining_date: '', salary: '' }); }} className="mt-6 px-4 py-2 bg-brand-600 text-white rounded-md text-sm font-semibold">Onboard New Employee</button>
+          <div className="text-center py-6 space-y-4">
+            <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center mx-auto text-xl font-bold">✓</div>
+            <p className="text-sm font-semibold text-slate-200">{success}</p>
+            <button onClick={() => { setStep(1); setFormData({ user_id: '', first_name: '', last_name: '', department_id: '', joining_date: '', salary: '' }); }} className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs uppercase tracking-wider">Onboard Next Account</button>
           </div>
         )}
       </div>

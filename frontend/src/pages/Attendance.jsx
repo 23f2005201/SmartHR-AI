@@ -40,43 +40,48 @@ export default function Attendance() {
   const handleLeaveSubmit = async (e) => {
     e.preventDefault();
     try {
-      // The backend expects employee_id, but our token figures it out. We pass a dummy 0 to pass schema validation if needed, or update schema to make it optional. 
-      // Assuming your schema allows omitting employee_id if handled by backend.
       await api.post('/leave/', { ...leaveData, employee_id: 0 });
       alert("Leave Request Submitted Successfully!");
-      fetchMyLeaves(); // Refresh the list
+      fetchMyLeaves();
     } catch (err) {
       alert(err.response?.data?.detail || "Failed to submit leave request.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
-      <h1 className="text-3xl font-bold text-slate-900 mb-8">Employee Self-Service Portal</h1>
+    <div className="p-6 sm:p-8 space-y-8 max-w-7xl mx-auto">
+      <div>
+        <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
+          Employee Self-Service Portal
+        </h1>
+        <p className="text-sm text-slate-400 mt-1">
+          Log daily operational time metrics and submit future leave applications.
+        </p>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Attendance Widget */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <h2 className="text-xl font-semibold text-slate-800 mb-4">Daily Attendance Logging</h2>
+        <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800/80 shadow-xl">
+          <h2 className="text-lg font-bold text-white mb-4">Daily Attendance Logging</h2>
           <div className="flex space-x-4 mb-4">
-            <button onClick={handleClockIn} className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors">
+            <button onClick={handleClockIn} className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all active:scale-[0.99] text-sm shadow-lg shadow-emerald-950/20">
               Clock In
             </button>
-            <button onClick={handleClockOut} className="px-6 py-3 bg-rose-600 text-white font-semibold rounded-lg hover:bg-rose-700 transition-colors">
+            <button onClick={handleClockOut} className="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl transition-all active:scale-[0.99] text-sm shadow-lg shadow-rose-950/20">
               Clock Out
             </button>
           </div>
-          {clockStatus && <p className="text-sm font-medium text-brand-600 bg-brand-50 p-3 rounded">{clockStatus}</p>}
+          {clockStatus && <p className="text-xs font-semibold text-blue-400 bg-blue-500/10 p-3 rounded-xl border border-blue-500/10 animate-fadeIn">{clockStatus}</p>}
         </div>
 
         {/* Leave Request Form */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <h2 className="text-xl font-semibold text-slate-800 mb-4">Submit Leave Petition</h2>
+        <div className="bg-slate-900/50 backdrop-blur-xl p-6 rounded-2xl border border-slate-800/80 shadow-xl">
+          <h2 className="text-lg font-bold text-white mb-4">Submit Leave Petition</h2>
           <form onSubmit={handleLeaveSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-600">Leave Category</label>
+              <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Leave Category</label>
               <select 
-                className="mt-1 w-full p-2 border rounded-md"
+                className="mt-1.5 w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-slate-700 font-medium"
                 value={leaveData.leave_type}
                 onChange={(e) => setLeaveData({...leaveData, leave_type: e.target.value})}
               >
@@ -87,43 +92,45 @@ export default function Attendance() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-600">Start Date</label>
-                <input required type="date" className="mt-1 w-full p-2 border rounded-md" onChange={(e) => setLeaveData({...leaveData, start_date: e.target.value})} />
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">Start Date</label>
+                <input required type="date" className="mt-1.5 w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-slate-700 font-medium" onChange={(e) => setLeaveData({...leaveData, start_date: e.target.value})} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-600">End Date</label>
-                <input required type="date" className="mt-1 w-full p-2 border rounded-md" onChange={(e) => setLeaveData({...leaveData, end_date: e.target.value})} />
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">End Date</label>
+                <input required type="date" className="mt-1.5 w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-slate-700 font-medium" onChange={(e) => setLeaveData({...leaveData, end_date: e.target.value})} />
               </div>
             </div>
-            <button type="submit" className="w-full py-2 bg-brand-600 text-white font-semibold rounded-lg hover:bg-brand-700">Submit Request</button>
+            <button type="submit" className="w-full py-3 bg-white hover:bg-slate-100 text-slate-900 font-bold rounded-xl text-sm transition-all active:scale-[0.99]">Submit Request</button>
           </form>
         </div>
       </div>
 
       {/* Leave History Table */}
-      <div className="mt-8 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-800 mb-4">My Leave History</h2>
+      <div className="bg-slate-900/30 backdrop-blur-xl rounded-2xl border border-slate-800/80 shadow-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-800 bg-slate-900/30">
+          <h2 className="text-md font-semibold text-white">My Personal Leave History</h2>
+        </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
+          <table className="min-w-full divide-y divide-slate-800">
+            <thead className="bg-slate-900/60">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Start</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">End</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-widest">Type</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-widest">Start</th>
+                <th className="px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-widest">End</th>
+                <th className="px-6 py-4 text-right text-xs font-bold text-slate-400 uppercase tracking-widest">Status</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-slate-200">
+            <tbody className="divide-y divide-slate-800 bg-slate-900/10">
               {myLeaves.map((leave, idx) => (
-                <tr key={idx}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{leave.leave_type}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{leave.start_date}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{leave.end_date}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${leave.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : 
-                        leave.status === 'Rejected' ? 'bg-rose-100 text-rose-800' : 
-                        'bg-amber-100 text-amber-800'}`}>
+                <tr key={idx} className="hover:bg-slate-800/20 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{leave.leave_type}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">{leave.start_date}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">{leave.end_date}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                    <span className={`px-2.5 py-1 text-xs font-bold rounded-full border ${
+                      leave.status === 'Approved' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 
+                      leave.status === 'Rejected' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' : 
+                      'bg-amber-500/10 border-amber-500/20 text-amber-400'}`}>
                       {leave.status}
                     </span>
                   </td>
@@ -131,7 +138,7 @@ export default function Attendance() {
               ))}
             </tbody>
           </table>
-          {myLeaves.length === 0 && <p className="text-center text-sm text-slate-500 mt-4">No leave requests found.</p>}
+          {myLeaves.length === 0 && <p className="text-center text-sm text-slate-600 py-8">No historical leave records detected.</p>}
         </div>
       </div>
     </div>
