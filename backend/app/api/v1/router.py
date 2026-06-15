@@ -6,6 +6,7 @@ from app.api.v1.attendance import router as attendance_router
 from app.api.v1.leave import router as leave_router
 from app.api.v1.payroll import router as payroll_router
 from app.api.v1.analytics import router as analytics_router
+from app.api.v1.ai_analytics import router as ai_analytics
 
 api_v1_router = APIRouter()
 
@@ -16,3 +17,4 @@ api_v1_router.include_router(attendance_router, prefix="/attendance", tags=["Att
 api_v1_router.include_router(leave_router, prefix="/leave", tags=["Leave Management"])
 api_v1_router.include_router(payroll_router, prefix="/payroll", tags=["Payroll Automation"])
 api_v1_router.include_router(analytics_router, prefix="/analytics", tags=["Reporting Analytics"])
+api_v1_router.include_router(ai_analytics, prefix="/ai", tags=["AI predictive Engine"])

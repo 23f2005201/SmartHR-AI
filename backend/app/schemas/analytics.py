@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Dict, List
+
 class DashboardSummaryResponse(BaseModel):
     total_headcount: int
     active_leave_claims: int
