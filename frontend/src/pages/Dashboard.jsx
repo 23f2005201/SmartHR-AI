@@ -4,28 +4,38 @@ import api from '../services/api';
 export default function Dashboard() {
   const [leaves, setLeaves] = useState([]);
   const [attendance, setAttendance] = useState([]);
+  const [attritionData, setAttritionData] = useState(null);
+  const [burnoutData, setBurnoutData] = useState(null);
+  const [loadingAI, setLoadingAI] = useState(true);
 
   useEffect(() => {
-    fetchDashboardData();
+    fetchDashboardAndAIMetrics();
   }, []);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardAndAIMetrics = async () => {
     try {
-      const [leavesRes, authRes] = await Promise.all([
+      const [leavesRes, authRes, attritionRes, burnoutRes] = await Promise.all([
         api.get('/leave/'),
-        api.get('/attendance/')
+        api.get('/attendance/'),
+        // Trigger Scikit-Learn pipelines directly on mounting load cycles
+        api.post('/ai/predict-attrition', { years_at_company: 3.5, monthly_salary: 45000, weekly_overtime_hours: 12, satisfaction_score: 2 }),
+        api.post('/ai/analyze-leave', { sick_leaves_taken: 4, casual_leaves_taken: 1, consecutive_days_requested: 5 })
       ]);
       setLeaves(leavesRes.data);
       setAttendance(authRes.data);
+      setAttritionData(attritionRes.data);
+      setBurnoutData(burnoutRes.data);
     } catch (err) {
-      console.error("Failed to load dashboard metrics.");
+      console.error("Failed to load connected analytical endpoints metrics.");
+    } finally {
+      setLoadingAI(false);
     }
   };
 
   const updateLeaveStatus = async (leaveId, newStatus) => {
     try {
       await api.put(`/leave/${leaveId}/status`, { status: newStatus });
-      fetchDashboardData();
+      fetchDashboardAndAIMetrics();
     } catch (err) {
       alert("Failed to update leave status.");
     }
@@ -34,7 +44,9 @@ export default function Dashboard() {
   const pendingLeaves = leaves.filter(l => l.status === 'Pending');
 
   return (
-    <div className="p-8 space-y-8 max-w-7xl w-full mx-auto">
+    <div className="p-8 space-y-8 max-w-7xl w-full mx-auto font-sans text-slate-100">
+      
+      {/* Row 1: Core Summary Statistics */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-sm">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Staff Clocked In Today</span>
@@ -50,6 +62,58 @@ export default function Dashboard() {
         </div>
       </section>
 
+      {/* Row 2: Live Predictive ML Feature Grid Panels */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Attrition Pipeline Tracker */}
+        <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl relative overflow-hidden backdrop-blur-md shadow-xl">
+          <div className="absolute top-0 right-0 bg-blue-500/10 text-blue-400 text-[10px] font-bold px-3 py-1 rounded-bl uppercase tracking-widest border-l border-b border-blue-500/10">
+            Scikit-Learn Pipeline
+          </div>
+          <h3 className="text-md font-bold text-white mb-2">Predictive Staff Turnover Assessment</h3>
+          <p className="text-xs text-slate-400 mb-4">Probability forecast models tracing overtime saturation maps vs satisfaction limits.</p>
+          {loadingAI ? (
+            <div className="h-20 bg-slate-950/40 animate-pulse rounded-xl border border-slate-800"></div>
+          ) : attritionData && (
+            <div className="p-4 bg-slate-950/50 rounded-xl border border-slate-800 flex items-center justify-between">
+              <div>
+                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Attrition Index State</span>
+                <span className={`block text-lg font-bold ${attritionData.attrition_risk === 'High' ? 'text-rose-400' : 'text-emerald-400'}`}>{attritionData.attrition_risk} Risk Profile</span>
+                <p className="text-xs text-slate-400 mt-1">{attritionData.recommendation}</p>
+              </div>
+              <div className="text-right ml-4">
+                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Probability</span>
+                <span className="block text-2xl font-extrabold text-white mt-0.5">{attritionData.risk_probability}%</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Burnout/Leave Anomaly Profile Tracker */}
+        <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl relative overflow-hidden backdrop-blur-md shadow-xl">
+          <div className="absolute top-0 right-0 bg-indigo-500/10 text-indigo-400 text-[10px] font-bold px-3 py-1 rounded-bl uppercase tracking-widest border-l border-b border-indigo-500/10">
+            RandomForest Model
+          </div>
+          <h3 className="text-md font-bold text-white mb-2">Leave Sequence Burnout Monitor</h3>
+          <p className="text-xs text-slate-400 mb-4">Evaluates requested time configurations against consecutive sick parameters to flag stress states.</p>
+          {loadingAI ? (
+            <div className="h-20 bg-slate-950/40 animate-pulse rounded-xl border border-slate-800"></div>
+          ) : burnoutData && (
+            <div className="p-4 bg-slate-950/50 rounded-xl border border-slate-800 flex items-center justify-between">
+              <div>
+                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Sequence Classification</span>
+                <span className="block text-sm font-bold text-slate-200 mt-0.5">{burnoutData.classification}</span>
+                <p className="text-xs text-slate-500 mt-1">Status: {burnoutData.irregular_pattern_detected ? "🚨 Anomalous Multi-Request Metric" : "✓ Within standard deviation intervals."}</p>
+              </div>
+              <div className="text-right ml-4">
+                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Anomaly Rank</span>
+                <span className="block text-2xl font-extrabold text-amber-400 mt-0.5">{burnoutData.pattern_anomaly_score}%</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Row 3: Approval Execution Table Grid */}
       <section className="bg-slate-900 rounded-xl border border-slate-800 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-800 bg-slate-900/50">
           <h2 className="text-md font-semibold text-white">Pending Leave Approvals</h2>

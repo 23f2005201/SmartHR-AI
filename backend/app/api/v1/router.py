@@ -7,6 +7,7 @@ from app.api.v1.leave import router as leave_router
 from app.api.v1.payroll import router as payroll_router
 from app.api.v1.analytics import router as analytics_router
 from app.api.v1.ai_analytics import router as ai_analytics
+from app.api.v1.ai_chat import router as ai_chat_router
 
 api_v1_router = APIRouter()
 
@@ -18,3 +19,4 @@ api_v1_router.include_router(leave_router, prefix="/leave", tags=["Leave Managem
 api_v1_router.include_router(payroll_router, prefix="/payroll", tags=["Payroll Automation"])
 api_v1_router.include_router(analytics_router, prefix="/analytics", tags=["Reporting Analytics"])
 api_v1_router.include_router(ai_analytics, prefix="/ai", tags=["AI predictive Engine"])
+api_v1_router.include_router(ai_chat_router, prefix="/ai/copilot", tags=["AI Copilot Interface"])

@@ -1,9 +1,11 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import AICopilotDrawer from '../common/AICopilotDrawer.jsx';
 
 export default function AppLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [aiOpen, setAiOpen] = React.useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -41,9 +43,18 @@ export default function AppLayout({ children }) {
             })}
           </nav>
         </div>
+        <div className="px-2 mb-2">
+          <button 
+            onClick={() => setAiOpen(true)} 
+            className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-950/30 flex items-center justify-center space-x-2"
+          >
+            <span>✨ Launch AI Copilot</span>
+          </button>
+        </div>
         <button onClick={handleLogout} className="w-full py-2.5 bg-rose-600/90 hover:bg-rose-600 text-white font-semibold rounded-lg text-sm transition-colors shadow-lg shadow-rose-900/20">
           Terminate Session
         </button>
+
       </aside>
       
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
@@ -58,6 +69,7 @@ export default function AppLayout({ children }) {
           {children}
         </main>
       </div>
+      <AICopilotDrawer isOpen={aiOpen} onClose={() => setAiOpen(false)} />
     </div>
   );
 }
