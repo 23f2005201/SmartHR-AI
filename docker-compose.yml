@@ -6,30 +6,42 @@ services:
   # 1. FastAPI Core HRMS Engine
   backend-engine:
     build:
-      context: ./smarthr-backend
+      context: ./backend
       dockerfile: Dockerfile
     container_name: smarthr-backend-container
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:secret@postgres-db:5432/smarthr
+      - DATABASE_URL=sqlite:////workspace/smarthr.db
       - OLLAMA_MODEL=llama3
     volumes:
-      - ./smarthr-backend:/workspace
+      - ./backend:/workspace
     networks:
       - smarthr-mesh
     restart: always
+    depends_on:
+      - ollama-service
 
   # 2. React UI Enterprise Command Canvas
   frontend-canvas:
     build:
-      context: ./smarthr-frontend
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: smarthr-frontend-container
     ports:
       - "3000:80"
     depends_on:
       - backend-engine
+    networks:
+      - smarthr-mesh
+    restart: always
+  ollama-service:
+    image: ollama/ollama:latest
+    container_name: smarthr-ollama-container
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./ollama_storage:/root/.ollama
     networks:
       - smarthr-mesh
     restart: always

@@ -1,6 +1,6 @@
 import os
 from typing import Any, Optional
-from langchain_community.llms import Ollama
+from langchain_ollama import OllamaLLM
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
@@ -8,7 +8,10 @@ class SmartHRAIAssistant:
     def __init__(self) -> None:
         self.model_name: str = os.getenv("OLLAMA_MODEL", "llama3")
         try:
-            self.llm: Optional[Ollama] = Ollama(base_url="http://localhost:11434", model=self.model_name)
+            self.llm: Optional[OllamaLLM] = OllamaLLM(
+                base_url="http://ollama-service:11434", 
+                model=self.model_name
+            )
         except Exception:
             self.llm = None
 
@@ -32,10 +35,7 @@ class SmartHRAIAssistant:
             return "AI Operational Exception: Local Ollama service agent unreachable. Ensure system service port 11434 is running."
 
         try:
-            # This completely drops the legacy LLMChain object wrapper requirement
             runnable_chain = prompt_template | self.llm | StrOutputParser()
-            
-            # Execute the pipeline with input parameter mapping parameters
             response = runnable_chain.invoke({"context": sys_context, "question": user_prompt})
             return str(response).strip()
         except Exception as e:

@@ -10,13 +10,24 @@ from app.api.v1.attendance import get_current_employee
 router = APIRouter()
 allow_hr_admin = RoleChecker(["Admin", "HR"])
 
+# 🚀 ADDED: The Missing Global GET Handler to populate Admin Dashboards
+@router.get("/", response_model=list[LeaveRequestResponse])
+def get_all_leave_requests(
+    db: Session = Depends(get_db), 
+    current_operator = Depends(allow_hr_admin)
+):
+    """
+    Fetches all leave requests within the system. 
+    Used by the HR Command Center to populate pending approval tables.
+    """
+    return db.query(LeaveRequest).all()
+
 @router.post("/", response_model=LeaveRequestResponse)
 def submit_leave_request(
     payload: LeaveRequestCreate, 
     db: Session = Depends(get_db), 
     employee: Employee = Depends(get_current_employee)
 ):
-    # Ensure the payload maps securely to the current user's employee ID
     new_leave = LeaveRequest(
         employee_id=employee.id,
         leave_type=payload.leave_type,
@@ -38,7 +49,7 @@ def update_leave_status(
     leave_id: int, 
     payload: LeaveRequestUpdate, 
     db: Session = Depends(get_db), 
-    current_operator = Depends(allow_hr_admin) # Guarded: Only HR/Admin can approve
+    current_operator = Depends(allow_hr_admin)
 ):
     leave = db.query(LeaveRequest).filter(LeaveRequest.id == leave_id).first()
     if not leave:

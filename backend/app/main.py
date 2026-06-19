@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.router import api_v1_router
 
@@ -8,14 +8,34 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Explicitly map the allowed incoming frontend access origins
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",  # Included for fallback safety
+]
+
 # Configure cross-origin resource sharing for the React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Default Vite local dev port
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
+
+# Catches browser preflight checks directly and approves them cleanly 
+@app.middleware("http")
+async def cors_preflight_handler(request: Request, call_next):
+    if request.method == "OPTIONS":
+        response = Response(status_code=200)
+        response.headers["Access-Control-Allow-Origin"] = "http://localhost:3000"
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        return response
+    
+    return await call_next(request)
 
 # Mount the consolidated API router matrix
 app.include_router(api_v1_router, prefix="/api/v1")
