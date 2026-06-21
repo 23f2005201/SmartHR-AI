@@ -13,7 +13,7 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=sqlite:////workspace/smarthr.db
-      - OLLAMA_MODEL=llama3
+      - OLLAMA_MODEL=llama3.2:1b
     volumes:
       - ./backend:/workspace
     networks:
@@ -45,3 +45,10 @@ services:
     networks:
       - smarthr-mesh
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 4096M
+        reservations:
+          memory: 3000M

@@ -216,3 +216,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+# Local SQLite databases (if decoupled from the standard django/flask rules)
+*.db
+*.db-journal
+
+# Ollama Model Weight Registry Cache
+# Prevents giant multi-gigabyte neural layers from flooding your commits
+ollama_storage/
+
+# Node modules / UI package dependencies (if frontend source is decoupled)
+node_modules/
+dist/
+.env.local
+.env.*.local
