@@ -7,9 +7,31 @@ export default function Dashboard() {
   const [attritionData, setAttritionData] = useState(null);
   const [burnoutData, setBurnoutData] = useState(null);
   const [loadingAI, setLoadingAI] = useState(true);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     fetchDashboardAndAIMetrics();
+
+    // 🚀 CONNECT REAL-TIME EVENT STREAM WEBSOCKET
+    const socketUrl = 'ws://localhost:8000/api/v1/notifications/stream';
+    const socket = new WebSocket(socketUrl);
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'ANOMALY_ALERT') {
+          // Push alert block to local state array queue
+          setNotifications((prev) => [data, ...prev]);
+        }
+      } catch (err) {
+        console.error('Error reading structural socket transmission:', err);
+      }
+    };
+
+    socket.onopen = () => console.log('🔔 Connected to SmartHR Notification Grid');
+    socket.onclose = () => console.log('📴 Notification Grid connection severed');
+
+    return () => socket.close();
   }, []);
 
   const fetchDashboardAndAIMetrics = async () => {
@@ -17,7 +39,6 @@ export default function Dashboard() {
       const [leavesRes, authRes, attritionRes, burnoutRes] = await Promise.all([
         api.get('/leave/'),
         api.get('/attendance/'),
-        // Trigger Scikit-Learn pipelines directly on mounting load cycles
         api.post('/ai/predict-attrition', { years_at_company: 3.5, monthly_salary: 45000, weekly_overtime_hours: 12, satisfaction_score: 2 }),
         api.post('/ai/analyze-leave', { sick_leaves_taken: 4, casual_leaves_taken: 1, consecutive_days_requested: 5 })
       ]);
@@ -46,6 +67,26 @@ export default function Dashboard() {
   return (
     <div className="p-8 space-y-8 max-w-7xl w-full mx-auto font-sans text-slate-100">
       
+      {/* 🔔 LIVE WEBSOCKET NOTIFICATION TOAST RUNWAY */}
+      {notifications.length > 0 && (
+        <section className="space-y-3">
+          {notifications.map((alertItem, idx) => (
+            <div key={idx} className="bg-amber-500/10 border border-amber-500/30 text-amber-200 px-5 py-4 rounded-xl flex items-center justify-between shadow-lg animate-fadeIn backdrop-blur-md">
+              <div className="flex items-center space-x-3">
+                <span className="text-xl">🚨</span>
+                <div>
+                  <h4 className="text-sm font-bold tracking-wide">{alertItem.title}</h4>
+                  <p className="text-xs text-amber-400/80 mt-0.5">Classification State Trigger: {alertItem.status}</p>
+                </div>
+              </div>
+              <div className="bg-amber-500/20 text-amber-300 px-3 py-1 text-xs font-black rounded-lg border border-amber-500/20">
+                SCORE: {alertItem.rank}
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
+
       {/* Row 1: Core Summary Statistics */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-sm">

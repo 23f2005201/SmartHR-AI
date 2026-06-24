@@ -28,6 +28,12 @@ export default function Reports() {
     loadSummaryMetrics();
   }, []);
 
+  // 🚀 TRIGGER ANALYTICS DOWNLOAD
+  const triggerAnalyticsDownload = () => {
+    // Pipe the browser document target window to intercept the FastAPI file stream
+    window.location.href = 'http://localhost:8000/api/v1/exports/export-attrition-report';
+  };
+
   // Structural dynamic query filtering handling logic
   const filteredLedger = mockTransactions.filter(item => {
     const matchesSearch = item.employee_id.toString() === searchQuery || searchQuery === '';
@@ -39,14 +45,25 @@ export default function Reports() {
     <div className="min-h-screen bg-slate-950 text-slate-100 p-6 sm:p-8 font-sans">
       <div className="max-w-7xl mx-auto space-y-8">
         
-        {/* Header Branding Panel */}
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
-            System Reporting & Audits
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Review aggregated cross-organization data metrics, salary spend metrics, and run search queries.
-          </p>
+        {/* Header Branding Panel with Integrated Action Button */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
+              System Reporting & Audits
+            </h1>
+            <p className="text-sm text-slate-400 mt-1">
+              Review aggregated cross-organization data metrics, salary spend metrics, and run search queries.
+            </p>
+          </div>
+
+          {/* 📥 WIRED DOWNLOAD TRIGGER BUTTON */}
+          <button 
+            onClick={triggerAnalyticsDownload}
+            className="w-full md:w-auto bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white text-xs font-semibold px-5 py-3 rounded-xl border border-slate-800 hover:border-slate-700 shadow-lg transition-all flex items-center justify-center space-x-2 cursor-pointer group"
+          >
+            <span className="transition-transform group-hover:translate-y-0.5">📥</span>
+            <span>Download Executive Attrition CSV Audit</span>
+          </button>
         </div>
 
         {/* Dynamic Aggregated Metrics Row Card Matrix */}
