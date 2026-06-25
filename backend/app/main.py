@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.router import api_v1_router
+from app.models import employee, leave, payroll
 
 app = FastAPI(
     title="SmartHR AI Platform API",
