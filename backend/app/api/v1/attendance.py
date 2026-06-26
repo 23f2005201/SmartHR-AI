@@ -1,13 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import date, datetime
+import logging
+
 from app.core.database import get_db
 from app.models.attendance import Attendance
 from app.models.employee import Employee
 from app.models.user import User
 from app.schemas.attendance import AttendanceResponse
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, RoleChecker
 
+logger = logging.getLogger("uvicorn.error")
 router = APIRouter()
 
 # Dependency to fetch the Employee profile of the active user
@@ -17,13 +20,16 @@ def get_current_employee(current_user: User = Depends(get_current_user), db: Ses
         raise HTTPException(status_code=404, detail="No employee profile mapped to this account.")
     return employee
 
+
 @router.post("/clock-in", response_model=AttendanceResponse)
 def clock_in(db: Session = Depends(get_db), employee: Employee = Depends(get_current_employee)):
     today = date.today()
     existing = db.query(Attendance).filter(Attendance.employee_id == employee.id, Attendance.date == today).first()
     
+    # 🌟 SAFE MULTI-CLICK OVERRIDE: Instead of hard crashing, return the active session cleanly
     if existing:
-        raise HTTPException(status_code=400, detail="You have already clocked in today.")
+        logger.warning(f"⚠️ User Profile #{employee.id} requested duplicate clock-in validation framework.")
+        return existing
     
     new_record = Attendance(
         employee_id=employee.id, 
@@ -36,6 +42,7 @@ def clock_in(db: Session = Depends(get_db), employee: Employee = Depends(get_cur
     db.refresh(new_record)
     return new_record
 
+
 @router.put("/clock-out", response_model=AttendanceResponse)
 def clock_out(db: Session = Depends(get_db), employee: Employee = Depends(get_current_employee)):
     today = date.today()
@@ -43,21 +50,20 @@ def clock_out(db: Session = Depends(get_db), employee: Employee = Depends(get_cu
     
     if not record:
         raise HTTPException(status_code=404, detail="No active clock-in record found for today.")
-    if record.clock_out: # type: ignore
-        raise HTTPException(status_code=400, detail="You have already clocked out today.")
-        
+    
+    # 🌟 SAFE OVERWRITE OPTION: If user clicks clock-out again, update it with the latest time stamp cleanly
     record.clock_out = datetime.now().time() # type: ignore
     db.commit()
     db.refresh(record)
     return record
 
-from app.api.deps import RoleChecker
+
 allow_hr_admin = RoleChecker(["Admin", "HR"])
 
 @router.get("/", response_model=list[AttendanceResponse])
 def get_todays_attendance(
     db: Session = Depends(get_db), 
-    current_operator = Depends(allow_hr_admin) # Guarded: Only HR/Admin
+    current_operator = Depends(allow_hr_admin)
 ):
     today = date.today()
     return db.query(Attendance).filter(Attendance.date == today).all()

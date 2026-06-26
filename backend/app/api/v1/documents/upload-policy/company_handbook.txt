@@ -1,0 +1,38 @@
+========================================================================
+SMARTHR AI PLATFORM — ENTERPRISE CODE OF CONDUCT & WORKPLACE POLICIES
+========================================================================
+Effective Date: June 25, 2026
+Document Version: 1.0.0
+
+------------------------------------------------------------------------
+SECTION 1: CORE ATTENDANCE & WORK HOURS POLICY
+------------------------------------------------------------------------
+1.1 Operational Framework
+The standard workweek consists of 40 operational hours, typically structured as 8 hours per day, Monday through Friday. Core collaboration hours are defined between 10:00 AM and 4:00 PM local time.
+
+1.2 Attendance Tracking & Clock-In Protocols
+All personnel are required to log daily attendance via the software portal. 
+- "Clock-In" events must be registered prior to 10:00 AM daily.
+- "Clock-Out" events must be registered upon completion of the daily shift.
+- Multi-click tracking telemetry is safely intercepted by the system; secondary clock-ins on the same calendar day will preserve the original entry.
+- Failure to log attendance for three consecutive working days without a submitted leave request triggers an automated system notification to Human Resources.
+
+------------------------------------------------------------------------
+SECTION 2: LEAVE ALLOCATION & COMPLIANCE GUARDRAILS
+------------------------------------------------------------------------
+2.1 Routine Leave Framework
+Full-time personnel receive a baseline allocation of 12 Sick Leaves and 15 Casual Leaves per fiscal cycle. 
+
+2.2 Burnout & Anomaly Prevention Guardrails
+The workforce analytics core dynamically scans leave request patterns to safeguard employee health and corporate stability. The following parameters represent anomalous or non-compliant behaviors:
+- Concentrated Pattern Flagging: Requesting more than 3 consecutive days of leave alongside adjacent weekends without a formal medical certificate.
+- Sick Leave Volatility: Consuming more than 4 allocated sick days within a single 30-day operational sprint.
+- Concurrency Anomaly: Simultaneous high-duration leave requests across more than 40% of a critical engineering or operations department.
+
+------------------------------------------------------------------------
+SECTION 3: COMPENSATION, REWARDS, AND FINANCES
+------------------------------------------------------------------------
+3.1 Payroll Disbursal Lifecycle
+Net monthly salaries are disbursed automatically on the final business day of each calendar month. The mathematical sum of global payroll spend is aggregated dynamically by the analytics matrix.
+
+3.2 Overtime Restrictions
