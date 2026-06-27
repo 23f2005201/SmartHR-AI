@@ -28,9 +28,9 @@ export default function Reports() {
     loadSummaryMetrics();
   }, []);
 
-  // 🚀 TRIGGER ANALYTICS DOWNLOAD
+  // 🚀 TRIGGER DIRECT MANUAL EXPORT DOWNLOAD
   const triggerAnalyticsDownload = () => {
-    // Pipe the browser document target window to intercept the FastAPI file stream
+    // Pipe the browser document target window to reach the core FastAPI file stream gateway
     window.location.href = 'http://localhost:8000/api/v1/exports/export-attrition-report';
   };
 

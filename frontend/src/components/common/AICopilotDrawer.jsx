@@ -19,7 +19,28 @@ export default function AICopilotDrawer({ isOpen, onClose }) {
 
     try {
       const response = await api.post('/ai/copilot/chat', { message: userText });
+      
+      // 1. Render the natural text response string safely
       setMessages((prev) => [...prev, { sender: 'ai', text: response.data.reply }]);
+
+      // 🚀 2. DYNAMIC CLIENT-SIDE ACTION INTERCEPTORS
+      const { action_trigger, action_meta } = response.data;
+
+      if (action_trigger === "DOWNLOAD" && action_meta?.url) {
+        console.log("📥 Autonomous Agent Triggered: Compiling & Downloading Ledger...");
+        // Re-route target location frame to auto-download the backend file stream
+        window.location.href = `http://localhost:8000${action_meta.url}`;
+      }
+
+      if (action_trigger === "TERMINATE") {
+        console.log("🔒 Autonomous Agent Triggered: Session Termination Protocol...");
+        // Flush all authentication cache values immediately
+        localStorage.clear();
+        sessionStorage.clear();
+        // Redirect the user to your landing login gateway interface
+        window.location.href = '/login';
+      }
+
     } catch (err) {
       setMessages((prev) => [...prev, { sender: 'ai', text: 'Error interacting with local AI agent pipeline. Confirm Ollama model instances are running.' }]);
     } finally {
