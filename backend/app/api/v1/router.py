@@ -11,6 +11,7 @@ from app.api.v1.ai_chat import router as ai_chat_router
 from app.api.endpoints import documents
 from app.api.endpoints import exports
 from app.api.endpoints import notifications
+from app.api.v1.websocket_chat import router as websocket_router
 
 api_v1_router = APIRouter()
 
@@ -26,3 +27,4 @@ api_v1_router.include_router(ai_chat_router, prefix="/ai/copilot", tags=["AI Cop
 api_v1_router.include_router(documents.router, prefix="/documents", tags=["Document Intelligence Analytics"])
 api_v1_router.include_router(exports.router, prefix="/exports", tags=["System Audit Reporting"])
 api_v1_router.include_router(notifications.router, prefix="/notifications", tags=["Real-time Infrastructure"])
+api_v1_router.include_router(websocket_router, tags=["AI WebSocket"])

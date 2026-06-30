@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import api from '../../services/api';
 
 export default function AICopilotDrawer({ isOpen, onClose }) {
   const [messages, setMessages] = useState([
@@ -7,6 +6,7 @@ export default function AICopilotDrawer({ isOpen, onClose }) {
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [currentStepStatus, setCurrentStepStatus] = useState('');
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -16,35 +16,73 @@ export default function AICopilotDrawer({ isOpen, onClose }) {
     setMessages((prev) => [...prev, { sender: 'user', text: userText }]);
     setInputMessage('');
     setSending(true);
+    setCurrentStepStatus('Initializing agent pipeline intent parser...');
 
     try {
-      const response = await api.post('/ai/copilot/chat', { message: userText });
+      // ⚡ PERFORMANCE UPGRADE: Swapped out Axios wrapper for low-overhead vanilla fetch Event-Stream processing
+      const response = await fetch('http://localhost:8000/api/v1/ai/copilot/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+        },
+        body: JSON.stringify({ message: userText })
+      });
+
+      if (!response.body) throw new Error("Readable streaming pipeline absent from server context.");
       
-      // 1. Render the natural text response string safely
-      setMessages((prev) => [...prev, { sender: 'ai', text: response.data.reply }]);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let completeBuffer = '';
 
-      // 🚀 2. DYNAMIC CLIENT-SIDE ACTION INTERCEPTORS
-      const { action_trigger, action_meta } = response.data;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
 
-      if (action_trigger === "DOWNLOAD" && action_meta?.url) {
-        console.log("📥 Autonomous Agent Triggered: Compiling & Downloading Ledger...");
-        // Re-route target location frame to auto-download the backend file stream
-        window.location.href = `http://localhost:8000${action_meta.url}`;
-      }
+        completeBuffer += decoder.decode(value, { stream: true });
+        const textLines = completeBuffer.split('\n');
+        
+        // Preserve unfinished tail fragments for the next iteration step
+        completeBuffer = textLines.pop() || '';
 
-      if (action_trigger === "TERMINATE") {
-        console.log("🔒 Autonomous Agent Triggered: Session Termination Protocol...");
-        // Flush all authentication cache values immediately
-        localStorage.clear();
-        sessionStorage.clear();
-        // Redirect the user to your landing login gateway interface
-        window.location.href = '/login';
+        for (const rawLine of textLines) {
+          if (rawLine.startsWith('DATA:')) {
+            const cleanJsonStr = rawLine.replace('DATA:', '').trim();
+            try {
+              const dataObj = json.parse(cleanJsonStr);
+
+              // Capture intermediate multi-step sequence statuses
+              if (dataObj.status_update) {
+                setCurrentStepStatus(dataObj.status_update);
+              }
+
+              // Intercept the final consolidated summary payload
+              if (dataObj.reply) {
+                setMessages((prev) => [...prev, { sender: 'ai', text: dataObj.reply }]);
+                
+                // Trigger client action scripts
+                const { action_trigger, action_meta } = dataObj;
+                if (action_trigger === "DOWNLOAD" && action_meta?.url) {
+                  window.location.href = `http://localhost:8000${action_meta.url}`;
+                }
+                if (action_trigger === "TERMINATE") {
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  window.location.href = '/login';
+                }
+              }
+            } catch (jsonErr) {
+              // Gracefully pass parsing alignment exceptions
+            }
+          }
+        }
       }
 
     } catch (err) {
       setMessages((prev) => [...prev, { sender: 'ai', text: 'Error interacting with local AI agent pipeline. Confirm Ollama model instances are running.' }]);
     } finally {
       setSending(false);
+      setCurrentStepStatus('');
     }
   };
 
@@ -73,10 +111,15 @@ export default function AICopilotDrawer({ isOpen, onClose }) {
           </div>
         ))}
         {sending && (
-          <div className="flex justify-start">
+          <div className="flex flex-col space-y-2 items-start justify-start">
             <div className="bg-slate-800/50 text-slate-400 rounded-2xl rounded-tl-none px-4 py-2.5 border border-slate-800 animate-pulse text-xs font-bold uppercase tracking-wider">
               Thinking / Formulating Insights...
             </div>
+            {currentStepStatus && (
+              <span className="text-[11px] font-semibold text-blue-400 tracking-wide bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/10 transition-all">
+                ⚙️ {currentStepStatus}
+              </span>
+            )}
           </div>
         )}
       </div>

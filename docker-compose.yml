@@ -13,7 +13,9 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=sqlite:////workspace/smarthr.db
-      - OLLAMA_MODEL=llama3.2:1b
+      - REDIS_URL=redis://smarthr-redis-cache:6379/0
+      - MEMGRAPH_HOST=smarthr-graph-db
+      - MEMGRAPH_PORT=7687
     volumes:
       - ./backend:/workspace
     networks:
@@ -21,6 +23,8 @@ services:
     restart: always
     depends_on:
       - ollama-service
+      - redis-cache
+      - graph-db
 
   # 2. React UI Enterprise Command Canvas
   frontend-canvas:
@@ -35,6 +39,8 @@ services:
     networks:
       - smarthr-mesh
     restart: always
+
+  # 3. Local Model Provider
   ollama-service:
     image: ollama/ollama:latest
     container_name: smarthr-ollama-container
@@ -52,3 +58,23 @@ services:
           memory: 4096M
         reservations:
           memory: 3000M
+
+  # ⚡ Redis In-Memory Cache
+  redis-cache:
+    image: docker.io/library/redis:7-alpine
+    container_name: smarthr-redis-cache
+    ports:
+      - "6380:6379"
+    networks:
+      - smarthr-mesh
+    restart: always
+
+  # 📊 Memgraph High-Speed Graph DB
+  graph-db:
+    image: memgraph/memgraph-mage:latest
+    container_name: smarthr-graph-db
+    ports:
+      - "7687:7687"
+    networks:
+      - smarthr-mesh
+    restart: always

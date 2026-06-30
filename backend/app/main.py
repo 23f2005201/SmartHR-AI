@@ -1,7 +1,15 @@
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+import logging
+
+# 🛡️ IMPORT DATABASE BINDERS TO RESOLVE MISSING SCHEMAS
+from app.core.database import engine, Base
 from app.api.v1.router import api_v1_router
+
+# Importing these models registers them with Base.metadata before create_all runs
 from app.models import employee, leave, payroll
+
+logger = logging.getLogger("uvicorn.error")
 
 app = FastAPI(
     title="SmartHR AI Platform API",
@@ -9,11 +17,23 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# 🚀 REGISTER AUTOMATIC SCHEMA INITIALIZATION TRIGGER AT BOOT
+@app.on_event("startup")
+def initialize_database_schemas():
+    """Checks the database instance and draws missing model tables on engine startup."""
+    logger.info("⚙️ Database Synchronization Engine: Scanning for unmapped models...")
+    try:
+        # Dynamically compiles payroll_records and other missing relational tables
+        Base.metadata.create_all(bind=engine)
+        logger.info("✅ All core database tables synchronized and active.")
+    except Exception as e:
+        logger.error(f"❌ Database synchronization event hook faulted: {str(e)}")
+
 # Explicitly map the allowed incoming frontend access origins
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://localhost:5173",  # Included for fallback safety
+    "http://localhost:5173",
 ]
 
 # Configure cross-origin resource sharing for the React frontend
