@@ -22,7 +22,6 @@ services:
       - smarthr-mesh
     restart: always
     depends_on:
-      - ollama-service
       - redis-cache
       - graph-db
 
@@ -59,7 +58,7 @@ services:
         reservations:
           memory: 3000M
 
-  # ⚡ Redis In-Memory Cache
+  # Redis In-Memory Cache
   redis-cache:
     image: docker.io/library/redis:7-alpine
     container_name: smarthr-redis-cache
@@ -69,7 +68,7 @@ services:
       - smarthr-mesh
     restart: always
 
-  # 📊 Memgraph High-Speed Graph DB
+  # Memgraph High-Speed Graph DB
   graph-db:
     image: memgraph/memgraph-mage:latest
     container_name: smarthr-graph-db

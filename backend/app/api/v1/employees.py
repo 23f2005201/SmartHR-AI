@@ -1,28 +1,62 @@
+from typing import Any, cast
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+
+from app.api.deps import RoleChecker
 from app.core.database import get_db
 from app.models.employee import Employee
-from app.schemas.employee import EmployeeCreate, EmployeeResponse
-from app.api.deps import RoleChecker, get_current_user
+
 
 router = APIRouter()
 
-# Instantiate the RBAC dependency rule
-allow_hr_and_admin = RoleChecker(["Admin", "HR"])
+allow_hr_admin = RoleChecker(["Admin", "HR"])
 
-@router.post("/", response_model=EmployeeResponse, status_code=status.HTTP_201_CREATED)
-def create_employee(
-    employee: EmployeeCreate, 
+
+@router.get("/")
+def get_employees(
     db: Session = Depends(get_db),
-    current_operator = Depends(allow_hr_and_admin) # Guarding the endpoint
+    current_user: Any = Depends(allow_hr_admin),
 ):
-    # Verify if the user account mapping exists
-    employee_exists = db.query(Employee).filter(Employee.user_id == employee.user_id).first()
-    if employee_exists:
-        raise HTTPException(status_code=400, detail="An employee profile is already mapped to this user account.")
+    employees = db.query(Employee).all()
+    return employees
 
-    db_employee = Employee(**employee.dict())
-    db.add(db_employee)
+
+@router.get("/{employee_id}")
+def get_employee(
+    employee_id: int,
+    db: Session = Depends(get_db),
+    current_user: Any = Depends(allow_hr_admin),
+):
+    employee = db.query(Employee).filter(Employee.id == employee_id).first()
+
+    if employee is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Employee not found",
+        )
+
+    return employee
+
+
+@router.delete("/{employee_id}")
+def delete_employee(
+    employee_id: int,
+    db: Session = Depends(get_db),
+    current_user: Any = Depends(allow_hr_admin),
+):
+    employee = db.query(Employee).filter(Employee.id == employee_id).first()
+
+    if employee is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Employee not found",
+        )
+
+    db.delete(employee)
     db.commit()
-    db.refresh(db_employee)
-    return db_employee
+
+    return {
+        "message": "Employee deleted successfully",
+        "employee_id": employee_id,
+    }
